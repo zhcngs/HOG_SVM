@@ -3,6 +3,7 @@ import glob
 import platform
 import time
 from PIL import Image
+from click._compat import raw_input
 from skimage.feature import hog
 import numpy as np
 import os
@@ -22,9 +23,9 @@ train_image_path = 'image128'
 test_image_path = 'image128'
 
 # 训练集标签的位置
-train_label_path = os.path.join('image128','train.txt')
+train_label_path = os.path.join('image128', 'train.txt')
 # 测试集标签的位置
-test_label_path = os.path.join('image128','train.txt')
+test_label_path = os.path.join('image128', 'train.txt')
 
 image_height = 128
 image_width = 100
@@ -36,10 +37,10 @@ model_path = 'model/'
 
 # 获得图片列表
 def get_image_list(filePath, nameList):
-    print('read image from ',filePath)
+    print('read image from ', filePath)
     img_list = []
     for name in nameList:
-        temp = Image.open(os.path.join(filePath,name))
+        temp = Image.open(os.path.join(filePath, name))
         img_list.append(temp.copy())
         temp.close()
     return img_list
@@ -53,11 +54,12 @@ def get_feat(image_list, name_list, label_list, savePath):
             # 如果是灰度图片  把3改为-1
             image = np.reshape(image, (image_height, image_width, 3))
         except:
-            print('发送了异常，图片大小size不满足要求：',name_list[i])
+            print('发送了异常，图片大小size不满足要求：', name_list[i])
             continue
         gray = rgb2gray(image) / 255.0
         # 这句话根据你的尺寸改改
-        fd = hog(gray, orientations=12,block_norm='L1', pixels_per_cell=[8, 8], cells_per_block=[4, 4], visualize=False,
+        fd = hog(gray, orientations=12, block_norm='L1', pixels_per_cell=[8, 8], cells_per_block=[4, 4],
+                 visualize=False,
                  transform_sqrt=True)
         fd = np.concatenate((fd, [label_list[i]]))
         fd_name = name_list[i] + '.feat'
@@ -75,17 +77,17 @@ def rgb2gray(im):
 
 # 获得图片名称与对应的类别
 def get_name_label(file_path):
-    print("read label from ",file_path)
+    print("read label from ", file_path)
     name_list = []
     label_list = []
     with open(file_path) as f:
         for line in f.readlines():
-            #一般是name label  三部分，所以至少长度为3  所以可以通过这个忽略空白行
-            if len(line)>=3: 
+            # 一般是name label  三部分，所以至少长度为3  所以可以通过这个忽略空白行
+            if len(line) >= 3:
                 name_list.append(line.split(' ')[0])
-                label_list.append(line.split(' ')[1].replace('\n','').replace('\r',''))
+                label_list.append(line.split(' ')[1].replace('\n', '').replace('\r', ''))
                 if not str(label_list[-1]).isdigit():
-                    print("label必须为数字，得到的是：",label_list[-1],"程序终止，请检查文件")
+                    print("label必须为数字，得到的是：", label_list[-1], "程序终止，请检查文件")
                     exit(1)
     return name_list, label_list
 
